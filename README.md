@@ -25,11 +25,13 @@ with fallback Indian dishes for a better experience.
 
 📸 Screenshots
 
-
+🔹 Home Page
 ![Home Page](Screenshot%202025-09-21%20145438.png)
 
+🔹 Recipe of the Day
 ![Recipe of the Day](Screenshot%202025-09-21%20145503.png)
 
+🔹 Featured Recipes
 ![Featured Recipes](Screenshot%202025-09-21%20145519.png)
 
 
