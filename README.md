@@ -21,21 +21,18 @@ with fallback Indian dishes for a better experience.
 
 🚀 Live Demo
 
-• 👉 Click Here to View Recipe Finder
+• 👉 View Recipe Finder (https://piyu1710.github.io/Recipe-Finder/)
 
 📸 Screenshots
 
 🔹 Home Page 
-
-Screenshot 2025-09-21 145438.png
+(Recipe-Finder/Screenshot 2025-09-21 145438.png)
 
 🔹 Recipe of the Day
-
-Screenshot 2025-09-21 145503.png
+(Recipe-Finder/Screenshot 2025-09-21 145503.png)
 
 🔹 Featured Recipes
-
-Screenshot 2025-09-21 145519.png
+(Recipe-Finder/Screenshot 2025-09-21 145519.png)
 
 
 🛠️ Tech Stack
