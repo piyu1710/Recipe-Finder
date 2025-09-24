@@ -25,9 +25,13 @@ with fallback Indian dishes for a better experience.
 
 📸 Screenshots
 
+
 ![Home Page](main/Screenshot%202025-09-21%20145438.png)
+
 ![Recipe of the Day](main/Screenshot%202025-09-21%20145503.png)
+
 ![Featured Recipes](main/Screenshot%202025-09-21%20145519.png)
+
 
 🛠️ Tech Stack
 
