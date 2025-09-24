@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Recipe Finder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#ee7c2b",
+              "background-light": "#f8f7f6",
+              "background-dark": "#221810",
+            },
+            fontFamily: {
+              display: ["Plus Jakarta Sans", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+  /* Custom animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  /* Loading spinner */
+  .spinner {
+    border: 3px solid rgba(238, 124, 43, 0.3);
+    border-radius: 50%;
+    border-top: 3px solid #ee7c2b;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-10 w-full bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm border-b border-primary/20 dark:border-primary/10">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex h-16 items-center justify-between">
+<div class="flex items-center gap-6">
+<a class="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white" href="#">
+<span class="material-symbols-outlined text-primary text-3xl">skillet</span>
+<span>RecipeFinder</span>
+</a>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Home</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Categories</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">About</a>
+</nav>
+</div>
+<div class="flex items-center gap-2">
+<label class="relative hidden sm:block">
+<span class="sr-only">Search</span>
+<span class="absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-500">search</span>
+</span>
+<input id="headerSearch" class="block w-full rounded-lg border-none bg-primary/10 dark:bg-primary/20 py-2 pl-10 pr-3 text-sm placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Search recipes..." type="search"/>
+</label>
+<button class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">favorite_border</span>
+</button>
+<button class="p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">person_outline</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow">
+<section class="relative flex min-h-[50vh] items-center justify-center bg-cover bg-center py-20 px-4 sm:px-6 lg:px-8" style='background-image: linear-gradient(to right, rgba(238, 124, 43, 0.8), rgba(238, 124, 43, 0.5)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuDH_aUnK7ZTcEWTllD5IXcDlKbOg1llwG6-op11FN-qdkceEHpHsN_kw8n5e2NLQHWXYEKZsrEKfrGyCvlsQptqEQh3tOt3npFwELdbeOu39rhENstzltQFcBOtEJq5sDpi0hZPeDNHtdnaNwKgA2b5NK76Q5VKRMS3tAdDtgivpavj5BAIyn3Suea1zUqV7jT9HrIyqTnF_YG4GSU2TBVnYz1YGeH3G_7z5_jdE5FYivBHKY3cugj5nz_Dzy0sY0k5siIq5w2frdo1");'>
+<div class="text-center text-white max-w-3xl">
+<h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">Discover Delicious Recipes</h1>
+<p class="mt-4 text-lg sm:text-xl">Find your next favorite meal from our extensive collection.</p>
+<div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+<input id="heroSearch" class="form-input w-full sm:w-80 rounded-lg border-2 border-transparent bg-white/90 px-4 py-3 text-gray-900 placeholder:text-gray-500 focus:border-primary focus:ring-primary" placeholder="Search by ingredients..." type="text"/>
+<button id="heroSearchBtn" class="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 font-bold text-primary shadow-lg transition-transform duration-200 hover:scale-105">
+                Search
+              </button>
+</div>
+<div class="mt-6 flex flex-wrap justify-center gap-2">
+<button class="category-btn rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30" data-category="all">All</button>
+<button class="category-btn rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30" data-category="indian">Indian Dishes</button>
+<button class="category-btn rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30" data-category="quick">Quick & Easy</button>
+<button class="category-btn rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/30" data-category="vegetarian">Vegetarian</button>
+</div>
+</div>
+</section>
+<section class="py-12 sm:py-16 lg:py-20">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="mb-10">
+<h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Recipe of the Day</h2>
+</div>
+<div id="recipeOfDay" class="group overflow-hidden rounded-xl bg-background-light dark:bg-background-dark shadow-lg ring-1 ring-primary/20 dark:ring-primary/10 transition-all duration-300 hover:shadow-2xl">
+  <!-- Recipe of the Day will be populated by JavaScript -->
+</div>
+</div>
+</section>
+<section class="py-12 sm:py-16 lg:py-20 bg-primary/5 dark:bg-primary/10">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="mb-10 text-center">
+<h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Featured Recipes</h2>
+<p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Explore our handpicked collection of popular dishes.</p>
+</div>
+<div id="featuredRecipes" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+  <!-- Featured recipes will be populated by JavaScript -->
+</div>
+<div id="loadingSpinner" class="hidden flex justify-center items-center py-12">
+  <div class="spinner"></div>
+</div>
+<div id="errorMessage" class="hidden text-center py-12 text-red-500">
+  <p>Oops! Something went wrong. Please try again later.</p>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-background-light dark:bg-background-dark border-t border-primary/20 dark:border-primary/10">
+<div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500 dark:text-gray-400">
+<p>© 2024 RecipeFinder. All Rights Reserved.</p>
+<p class="mt-1">Designed with love for delicious food.</p>
+</div>
+</footer>
+</div>
+
+<!-- Recipe Details Modal -->
+<div id="recipeModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black bg-opacity-50">
+  <div class="flex min-h-screen items-center justify-center p-4">
+    <div class="relative w-full max-w-2xl rounded-lg bg-background-light dark:bg-background-dark shadow-xl">
+      <button id="closeModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+        <span class="material-symbols-outlined text-2xl">close</span>
+      </button>
+      <div id="modalContent" class="p-6">
+        <!-- Modal content will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // API Configuration
+  const API_KEY = '55be0577d44d4a3e93dbc3819abef5bb'; // Spoonacular API key
+  const API_BASE_URL = 'https://api.spoonacular.com/recipes';
+  
+  // Fallback Recipes
+  const fallbackRecipes = [
+    {
+      id: 1,
+      title: "Spicy Chicken Curry",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCDDfrCJNolo9CCm7YBz36XK5FXwRAS8x5oK1pkuOjMB1vWOlh1_RDv5_5VDS6uMT0YZYcTj-rNgbJI1s0fTzw0MY6UEmUa0xk5yHUZihLidnpJ-69N3fYUgC0bxpnB6m0E40kqSqrQ_YDTuASGqThWJvkMQHaf7vtbPcPUVhGsaVDCGVyrEpXQW-m3kEY9x3auj5viQodYydc89iuNiN1VGa3-25UvvrPew3k5kMKcK-CLZehfw12djhbswPWz3GJsHzy_i211_gzr",
+      description: "A classic Indian dish with tender chicken in a rich, flavorful sauce. Perfect for a comforting weeknight dinner.",
+      ingredients: ["Chicken", "Onions", "Tomatoes", "Ginger", "Garlic", "Curry Powder", "Coconut Milk", "Vegetable Oil"],
+      instructions: "1. Heat oil in a large pan and sauté onions until golden. 2. Add ginger and garlic, cook for 1 minute. 3. Add chicken pieces and brown on all sides. 4. Add tomatoes and spices, cook until tomatoes break down. 5. Pour in coconut milk and simmer for 20-25 minutes. 6. Garnish with fresh cilantro and serve with rice.",
+      readyInMinutes: 45,
+      servings: 4,
+      category: "indian",
+      sourceUrl: "https://www.spoonacular.com/recipes/spicy-chicken-curry-123456"
+    },
+    {
+      id: 2,
+      title: "Vegetable Biryani",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDXT708KtBUQtgcY8VJuuMuNQj6Uh9SkDRjRwn1hQiPD7BHUfen2VUlrNkfH-sJLeJvfb5yFQWfgQPz1R5QEa3l5YpZ3RyT9ivxCe5clp7qMozBblh_2h1svXmWEEnR4PHHNUifaUcGVeN47N5fW8QdP5Yw7dN8evpCaX03mF-0q31UfO5nfilWqTtVn-MSujugrnW412jWO4Qz1rYGLoLlq-IPmEIt4DqGdnUIkWf7WhzagTSObuY2McoJuWRAa_JKbB5XhhWJHCK9",
+      description: "Fragrant basmati rice layered with spiced vegetables and aromatic herbs. A complete meal in one pot.",
+      ingredients: ["Basmati Rice", "Mixed Vegetables", "Onions", "Tomatoes", "Yogurt", "Biryani Spices", "Saffron", "Ghee"],
+      instructions: "1. Soak rice for 30 minutes. 2. Prepare vegetable masala with onions, tomatoes, and spices. 3. Parboil rice with whole spices. 4. Layer rice and vegetables in a heavy pot. 5. Add saffron milk and seal with dough. 6. Cook on low heat for 20 minutes. 7. Let it rest for 10 minutes before serving.",
+      readyInMinutes: 60,
+      servings: 6,
+      category: "vegetarian",
+      sourceUrl: "https://www.spoonacular.com/recipes/vegetable-biryani-234567"
+    },
+    {
+      id: 3,
+      title: "Paneer Tikka Masala",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDIdsSKSVor2wYIzgiauRjQiGziXGA6ZFQCXs1EuEXs5orJFGUp_oCF34DyW3tgG086jQmi7HZwkPuldv6458XMFWrZffj38synxuRmKjy0AiQ0p9MTFY_M2pGGblKFtL4WqIlipyC1N3OKNNWFCWWPNbbjsqMt_EfnOukEcuUyEegFa1CXUFUxzvQCl57NXnbgP_Z-C-FEiVBQJ5XCVmY0nV7rHwiE17LCCiEhWd1kmc3bOGW2HZ_jEPP8uP8QHmyt2JW7NNvSQmWd",
+      description: "Soft cubes of paneer in a creamy, spiced tomato sauce. A vegetarian favorite that's rich and satisfying.",
+      ingredients: ["Paneer", "Tomatoes", "Onions", "Cream", "Ginger", "Garlic", "Garam Masala", "Butter"],
+      instructions: "1. Marinate paneer cubes in yogurt and spices for 30 minutes. 2. Grill or pan-fry paneer until golden. 3. Prepare gravy with onions, tomatoes, and spices. 4. Add cream and simmer for 10 minutes. 5. Add grilled paneer and cook for 5 minutes. 6. Garnish with cream and cilantro.",
+      readyInMinutes: 40,
+      servings: 4,
+      category: "vegetarian",
+      sourceUrl: "https://www.spoonacular.com/recipes/paneer-tikka-masala-345678"
+    },
+    {
+      id: 4,
+      title: "Dal Makhani",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBxrsiHFmSodeAdc61HDcjZjgT044Iu9gS60K_GMFuKgKbbyaAx1RrunRjTmxRm0MQaw4eMpMz8GsDb5d-5Z2GfhTo3MuzMdfL5W5dMpvWzpZ023_jaqamyBrMcCpShKTz0srwg2kYltMXy_DVTRLZypR8x4Eu81QMlYCUwYoIgdRxFBEyPC1hBHZYfoPW6xF3uzlRTgMcF9J6arRpkMmuEXe63NYsJxeyKrJD4lShZbGDFlTy44IL4MOztnNCXa0rRiYVlL6NYQXbq",
+      description: "Creamy black lentils slow-cooked with butter and cream. A rich and hearty North Indian delicacy.",
+      ingredients: ["Black Lentils", "Kidney Beans", "Onions", "Tomatoes", "Ginger", "Garlic", "Cream", "Butter"],
+      instructions: "1. Soak lentils and kidney beans overnight. 2. Pressure cook until tender. 3. Prepare tempering with onions, tomatoes, and spices. 4. Add cooked lentils and simmer for 30 minutes. 5. Add cream and butter. 6. Garnish with fresh cream and serve with naan.",
+      readyInMinutes: 90,
+      servings: 6,
+      category: "indian",
+      sourceUrl: "https://www.spoonacular.com/recipes/dal-makhani-456789"
+    },
+    {
+      id: 5,
+      title: "Chole Bhature",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuAFd3zIHm-m99YsGLhrViSm9RqnODL7xagw7JFOkgRTBYu_Bf2g3t3FVDx5TwbKNvEKbu0JO8CSFqhJ7QnMpKgymV_fjlJtkgR3A5W6_-vuieJHZWiqgzpmPkxEyhzZjEaLX3FnHAAkoNpB2BPs3u1RT4GxebwL6R3AgW1227lddu0a1DVoWmQFZSWcvgsvoi4IDeKDweY62W2e4zT0Ph1MFoh-0VoPuMATrLDy-_XDGPFdUBF4e5xpdxhExthzPQte4x4bI1zBu2nK",
+      description: "Spicy chickpea curry served with fluffy fried bread. A popular North Indian street food.",
+      ingredients: ["Chickpeas", "Flour", "Yogurt", "Onions", "Tomatoes", "Spices", "Baking Powder", "Oil"],
+      instructions: "1. Soak chickpeas overnight and pressure cook until tender. 2. Prepare masala with onions, tomatoes, and spices. 3. Add cooked chickpeas and simmer. 4. For bhature, mix flour, yogurt, and baking powder. 5. Roll into circles and deep fry until puffed. 6. Serve hot chole with bhature.",
+      readyInMinutes: 120,
+      servings: 4,
+      category: "indian",
+      sourceUrl: "https://www.spoonacular.com/recipes/chole-bhature-567890"
+    },
+    {
+      id: 6,
+      title: "Palak Paneer",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCO9qE9PgT-h7s4NKeubCKsXDkUOan7ERbmiduhnC_Jm2wP22iI-AfWMmC9cVm23_hTzpfahC4KSMUtxM3VDn6AMdrsAOBLOpZOTbh4UFpBbBpmq0czSKvnwgjgmeGYj6QXOD2odwI7naV65cayEN5zaBPqZGnQvBwSP04AzS8IbK8Ssr7ZQI1Qdhh9UaJOqdbsrkPdIiMqfBNLAvv4geqlQUEv5T7LstHOnycQzMdmysGimDhSLnzCMeg9-N9Qrjv9tgQl9nTp8rw6",
+      description: "Cubes of paneer in a smooth spinach gravy. A nutritious and delicious vegetarian dish.",
+      ingredients: ["Spinach", "Paneer", "Onions", "Tomatoes", "Ginger", "Garlic", "Cream", "Spices"],
+      instructions: "1. Blanch spinach and blend to a smooth puree. 2. Pan-fry paneer cubes until golden. 3. Prepare gravy with onions, tomatoes, and spices. 4. Add spinach puree and simmer. 5. Add paneer and cream. 6. Cook for 5 minutes and serve hot.",
+      readyInMinutes: 35,
+      servings: 4,
+      category: "vegetarian",
+      sourceUrl: "https://www.spoonacular.com/recipes/palak-paneer-678901"
+    },
+    {
+      id: 7,
+      title: "Aloo Gobi",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCnuWSSSWRvJGYKYuVlWc4Lxhx_NTX8IfPt95rVB76iq_wY3Oy8-VdIEFMg7J1tXzEh3cFvRnZ3WXLDyrm33fg_8wueX50nPaxzE5meYfVEoMIENwKuQVr6Y0YrkUTpcVcZpqUwFm4ZlXppLXZF-hpYjtz3kHtouQlXSoWDoKbGAO0Bj7sP2ROs8dUz8GgOLYwt_7lJ6UMx3YVwjf-38qv5b-uOUZouQCTATvwpWYsx-LM7jE-2t4dghzE58EMoceQ4WIM1iVetO-Ck",
+      description: "Potatoes and cauliflower cooked with aromatic spices. A simple yet flavorful dry curry.",
+      ingredients: ["Potatoes", "Cauliflower", "Onions", "Tomatoes", "Ginger", "Garlic", "Turmeric", "Cumin"],
+      instructions: "1. Heat oil and add cumin seeds. 2. Add onions and sauté until golden. 3. Add ginger-garlic paste and cook. 4. Add potatoes and cauliflower, stir well. 5. Add spices and cook covered until tender. 6. Garnish with cilantro and serve hot.",
+      readyInMinutes: 30,
+      servings: 4,
+      category: "vegetarian",
+      sourceUrl: "https://www.spoonacular.com/recipes/aloo-gobi-789012"
+    },
+    {
+      id: 8,
+      title: "Quick Vegetable Stir Fry",
+      image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
+      description: "Colorful vegetables stir-fried in a savory sauce. Ready in under 20 minutes!",
+      ingredients: ["Mixed Vegetables", "Soy Sauce", "Garlic", "Ginger", "Sesame Oil", "Vegetable Oil"],
+      instructions: "1. Heat oil in a wok or large pan. 2. Add garlic and ginger, stir-fry for 30 seconds. 3. Add harder vegetables first (carrots, broccoli). 4. Add softer vegetables and stir-fry for 3-4 minutes. 5. Add soy sauce and seasonings. 6. Serve hot with rice or noodles.",
+      readyInMinutes: 20,
+      servings: 2,
+      category: "quick",
+      sourceUrl: "https://www.spoonacular.com/recipes/quick-vegetable-stir-fry-890123"
+    }
+  ];
+
+  // DOM Elements
+  const heroSearch = document.getElementById('heroSearch');
+  const heroSearchBtn = document.getElementById('heroSearchBtn');
+  const headerSearch = document.getElementById('headerSearch');
+  const categoryBtns = document.querySelectorAll('.category-btn');
+  const recipeOfDay = document.getElementById('recipeOfDay');
+  const featuredRecipes = document.getElementById('featuredRecipes');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const errorMessage = document.getElementById('errorMessage');
+  const recipeModal = document.getElementById('recipeModal');
+  const closeModal = document.getElementById('closeModal');
+  const modalContent = document.getElementById('modalContent');
+
+  // Current state
+  let currentCategory = 'all';
+  let currentRecipes = fallbackRecipes;
+
+  // Initialize the app
+  document.addEventListener('DOMContentLoaded', () => {
+    // Set Recipe of the Day
+    setRecipeOfTheDay();
+    
+    // Load initial recipes
+    loadFeaturedRecipes();
+    
+    // Event Listeners
+    heroSearchBtn.addEventListener('click', handleHeroSearch);
+    heroSearch.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleHeroSearch();
+    });
+    headerSearch.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleHeaderSearch();
+    });
+    categoryBtns.forEach(btn => {
+      btn.addEventListener('click', handleCategoryFilter);
+    });
+    closeModal.addEventListener('click', () => {
+      recipeModal.classList.add('hidden');
+    });
+    
+    // Close modal when clicking outside
+    recipeModal.addEventListener('click', (e) => {
+      if (e.target === recipeModal) {
+        recipeModal.classList.add('hidden');
+      }
+    });
+  });
+
+  // Set Recipe of the Day
+  function setRecipeOfTheDay() {
+    const today = new Date().toDateString();
+    const savedDate = localStorage.getItem('recipeOfDayDate');
+    let recipeIndex;
+    
+    if (savedDate === today) {
+      recipeIndex = parseInt(localStorage.getItem('recipeOfDayIndex') || '0');
+    } else {
+      recipeIndex = Math.floor(Math.random() * fallbackRecipes.length);
+      localStorage.setItem('recipeOfDayDate', today);
+      localStorage.setItem('recipeOfDayIndex', recipeIndex);
+    }
+    
+    const recipe = fallbackRecipes[recipeIndex];
+    recipeOfDay.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        <div class="relative">
+          <img alt="${recipe.title}" class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" src="${recipe.image}"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        </div>
+        <div class="p-6 sm:p-8 flex flex-col justify-center">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">${recipe.title}</h3>
+          <p class="mt-2 text-gray-600 dark:text-gray-300">
+            ${recipe.description}
+          </p>
+          <button onclick="showRecipeDetails(${recipe.id})" class="mt-6 inline-flex items-center justify-center rounded-lg bg-primary px-5 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-opacity-90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-background-dark">
+            View Recipe
+            <span class="material-symbols-outlined ml-2">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Load featured recipes
+  function loadFeaturedRecipes() {
+    showLoading();
+    
+    // Fetch from API
+    fetchRandomRecipes()
+      .then(recipes => {
+        hideLoading();
+        currentRecipes = recipes;
+        displayRecipes(recipes);
+      })
+      .catch(error => {
+        console.error('Error fetching recipes:', error);
+        hideLoading();
+        // Fallback to local recipes
+        currentRecipes = fallbackRecipes;
+        displayRecipes(fallbackRecipes);
+      });
+  }
+
+  // Handle hero search
+  function handleHeroSearch() {
+    const query = heroSearch.value.trim();
+    if (!query) return;
+    
+    showLoading();
+    
+    searchRecipes(query)
+      .then(recipes => {
+        hideLoading();
+        currentRecipes = recipes;
+        displayRecipes(recipes);
+      })
+      .catch(error => {
+        console.error('Error searching recipes:', error);
+        hideLoading();
+        // Fallback to filtering local recipes
+        const filtered = fallbackRecipes.filter(recipe => 
+          recipe.title.toLowerCase().includes(query.toLowerCase()) ||
+          recipe.ingredients.some(ing => ing.toLowerCase().includes(query.toLowerCase()))
+        );
+        currentRecipes = filtered;
+        displayRecipes(filtered);
+      });
+  }
+
+  // Handle header search
+  function handleHeaderSearch() {
+    const query = headerSearch.value.trim();
+    if (!query) return;
+    
+    heroSearch.value = query;
+    handleHeroSearch();
+  }
+
+  // Handle category filter
+  function handleCategoryFilter(e) {
+    const category = e.target.dataset.category;
+    currentCategory = category;
+    
+    // Update active button
+    categoryBtns.forEach(btn => {
+      btn.classList.remove('bg-white', 'text-primary');
+      btn.classList.add('bg-white/20', 'text-white');
+    });
+    e.target.classList.remove('bg-white/20', 'text-white');
+    e.target.classList.add('bg-white', 'text-primary');
+    
+    // Filter recipes
+    showLoading();
+    
+    if (category === 'all') {
+      loadFeaturedRecipes();
+    } else {
+      // Search by category using API
+      searchByCategory(category)
+        .then(recipes => {
+          hideLoading();
+          currentRecipes = recipes;
+          displayRecipes(recipes);
+        })
+        .catch(error => {
+          console.error('Error searching by category:', error);
+          hideLoading();
+          // Fallback to filtering local recipes
+          const filtered = fallbackRecipes.filter(recipe => recipe.category === category);
+          currentRecipes = filtered;
+          displayRecipes(filtered);
+        });
+    }
+  }
+
+  // Display recipes
+  function displayRecipes(recipes) {
+    featuredRecipes.innerHTML = '';
+    
+    if (recipes.length === 0) {
+      featuredRecipes.innerHTML = '<div class="col-span-full text-center py-12 text-gray-500">No recipes found. Try a different search term.</div>';
+      return;
+    }
+    
+    recipes.forEach((recipe, index) => {
+      const recipeCard = document.createElement('div');
+      recipeCard.className = 'group overflow-hidden rounded-xl bg-background-light dark:bg-background-dark shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 fade-in';
+      recipeCard.style.animationDelay = `${index * 0.1}s`;
+      
+      recipeCard.innerHTML = `
+        <img alt="${recipe.title}" class="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105" src="${recipe.image}"/>
+        <div class="p-4">
+          <h3 class="font-semibold text-lg text-gray-900 dark:text-white">${recipe.title}</h3>
+          <div class="mt-2 flex gap-2">
+            <button onclick="showRecipeDetails(${recipe.id})" class="inline-block text-sm font-medium text-primary hover:underline">
+              View Details
+            </button>
+            ${recipe.sourceUrl ? `
+              <a href="${recipe.sourceUrl}" target="_blank" class="inline-block text-sm font-medium text-green-600 hover:underline">
+                Visit Recipe
+                <span class="material-symbols-outlined text-xs align-middle">open_in_new</span>
+              </a>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      
+      featuredRecipes.appendChild(recipeCard);
+    });
+  }
+
+  // Show recipe details in modal
+  function showRecipeDetails(recipeId) {
+    // First check if recipe is in current recipes
+    let recipe = currentRecipes.find(r => r.id === recipeId);
+    
+    // If not found, check fallback recipes
+    if (!recipe) {
+      recipe = fallbackRecipes.find(r => r.id === recipeId);
+    }
+    
+    // If still not found and it's an API recipe, fetch details
+    if (!recipe && API_KEY) {
+      getRecipeDetails(recipeId)
+        .then(data => {
+          recipe = formatApiRecipe(data);
+          displayRecipeInModal(recipe);
+        })
+        .catch(error => {
+          console.error('Error fetching recipe details:', error);
+          showError('Could not load recipe details');
+        });
+      return;
+    }
+    
+    if (recipe) {
+      displayRecipeInModal(recipe);
+    }
+  }
+
+  // Display recipe in modal
+  function displayRecipeInModal(recipe) {
+    modalContent.innerHTML = `
+      <img src="${recipe.image}" alt="${recipe.title}" class="w-full h-64 object-cover rounded-lg mb-6">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">${recipe.title}</h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">${recipe.description}</p>
+      
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">Prep Time</p>
+          <p class="font-semibold">${recipe.readyInMinutes} minutes</p>
+        </div>
+        <div class="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400">Servings</p>
+          <p class="font-semibold">${recipe.servings} people</p>
+        </div>
+      </div>
+      
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">Ingredients</h3>
+        <ul class="space-y-2">
+          ${recipe.ingredients.map(ing => `<li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2 text-sm">check_circle</span>${ing}</li>`).join('')}
+        </ul>
+      </div>
+      
+      <div class="mb-6">
+        <h3 class="text-lg font-semibold mb-3">Instructions</h3>
+        <p class="text-gray-600 dark:text-gray-300 whitespace-pre-line">${recipe.instructions}</p>
+      </div>
+      
+      <div class="flex gap-4">
+        ${recipe.sourceUrl ? `
+          <a href="${recipe.sourceUrl}" target="_blank" class="inline-flex items-center justify-center rounded-lg bg-green-600 px-5 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-opacity-90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2 dark:focus:ring-offset-background-dark">
+            Visit Original Recipe
+            <span class="material-symbols-outlined ml-2">open_in_new</span>
+          </a>
+        ` : ''}
+        <button onclick="window.print()" class="inline-flex items-center justify-center rounded-lg bg-gray-600 px-5 py-3 font-semibold text-white shadow-md transition-all duration-200 hover:bg-opacity-90 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 dark:focus:ring-offset-background-dark">
+          Print Recipe
+          <span class="material-symbols-outlined ml-2">print</span>
+        </button>
+      </div>
+    `;
+    
+    recipeModal.classList.remove('hidden');
+  }
+
+  // API Functions
+  async function fetchRandomRecipes() {
+    const response = await fetch(`${API_BASE_URL}/random?number=6&apiKey=${API_KEY}`);
+    if (!response.ok) throw new Error('Failed to fetch recipes');
+    const data = await response.json();
+    return data.recipes.map(formatApiRecipe);
+  }
+
+  async function searchRecipes(query) {
+    const response = await fetch(`${API_BASE_URL}/complexSearch?query=${query}&number=6&apiKey=${API_KEY}`);
+    if (!response.ok) throw new Error('Failed to search recipes');
+    const data = await response.json();
+    
+    // Get detailed information for each recipe
+    const detailedRecipes = await Promise.all(
+      data.results.map(recipe => getRecipeDetails(recipe.id))
+    );
+    
+    return detailedRecipes.map(formatApiRecipe);
+  }
+
+  async function searchByCategory(category) {
+    let query = '';
+    switch(category) {
+      case 'indian':
+        query = 'indian';
+        break;
+      case 'vegetarian':
+        query = 'vegetarian';
+        break;
+      case 'quick':
+        query = 'quick';
+        break;
+      default:
+        query = '';
+    }
+    
+    const response = await fetch(`${API_BASE_URL}/complexSearch?query=${query}&number=6&apiKey=${API_KEY}`);
+    if (!response.ok) throw new Error('Failed to search by category');
+    const data = await response.json();
+    
+    // Get detailed information for each recipe
+    const detailedRecipes = await Promise.all(
+      data.results.map(recipe => getRecipeDetails(recipe.id))
+    );
+    
+    return detailedRecipes.map(formatApiRecipe);
+  }
+
+  async function getRecipeDetails(recipeId) {
+    const response = await fetch(`${API_BASE_URL}/${recipeId}/information?apiKey=${API_KEY}`);
+    if (!response.ok) throw new Error('Failed to get recipe details');
+    return response.json();
+  }
+
+  function formatApiRecipe(apiRecipe) {
+    return {
+      id: apiRecipe.id,
+      title: apiRecipe.title,
+      image: apiRecipe.image,
+      description: apiRecipe.summary?.replace(/<[^>]*>/g, '') || 'No description available.',
+      ingredients: apiRecipe.extendedIngredients?.map(ing => ing.name) || [],
+      instructions: apiRecipe.instructions || 'No instructions available.',
+      readyInMinutes: apiRecipe.readyInMinutes || 30,
+      servings: apiRecipe.servings || 4,
+      sourceUrl: apiRecipe.sourceUrl || null,
+      category: apiRecipe.vegetarian ? 'vegetarian' : 'all'
+    };
+  }
+
+  // UI Helper Functions
+  function showLoading() {
+    loadingSpinner.classList.remove('hidden');
+    errorMessage.classList.add('hidden');
+  }
+
+  function hideLoading() {
+    loadingSpinner.classList.add('hidden');
+  }
+
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.classList.remove('hidden');
+    loadingSpinner.classList.add('hidden');
+  }
+</script>
+</body></html>
